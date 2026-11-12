@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0b0f1a;
+  --card: #121a2d;
+  --border: #26304d;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background:
+    radial-gradient(1100px 480px at 85% -10%, rgba(167, 139, 250, 0.13), transparent),
+    radial-gradient(900px 420px at 5% 108%, rgba(34, 211, 238, 0.1), transparent),
+    var(--bg);
+  color: #e7ecf7;
+  font-family: "Cairo", system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+}
+
+.card {
+  background: linear-gradient(180deg, var(--card), #0e1524);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.grad-text {
+  background: linear-gradient(135deg, #22d3ee, #a78bfa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.grad-btn {
+  background: linear-gradient(135deg, #22d3ee, #a78bfa);
+  color: #08101f;
+}
+
+.grad-btn:hover {
+  filter: brightness(1.08);
+}
+
+.grad-dot {
+  background: linear-gradient(135deg, #22d3ee, #a78bfa);
+}
+
+.code-box {
+  background: #0d1322;
+  border: 1px solid var(--border);
+  direction: ltr;
+  text-align: left;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+input,
+select {
+  background: #0d1322;
+  border: 1px solid var(--border);
+  color: #e7ecf7;
+  border-radius: 10px;
+  padding: 9px 12px;
+  outline: none;
+  font-family: inherit;
+}
+
+input:focus,
+select:focus {
+  border-color: #22d3ee;
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2b3860;
+  border-radius: 99px;
+}
