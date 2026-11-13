@@ -199,7 +199,6 @@ export function registerMediaTools(server: McpServer): void {
       }
     }
   );
-
   // 3) merge_videos
   server.registerTool(
     "merge_videos",
@@ -229,7 +228,6 @@ export function registerMediaTools(server: McpServer): void {
     },
     async (args, extra) => {
       const a = args as { urls?: string[]; task_ids?: string[]; wait_seconds?: number };
-      // رسائل عربية للمخالفات حتى لو تجاوزها عميل لم يفحص المخطط
       const pre = validateMergeArgsCounts(a);
       if (pre) return textResult({ text: pre, isError: true });
       try {
@@ -262,4 +260,32 @@ export function registerMediaTools(server: McpServer): void {
       }
     }
   );
-  
+
+  // 5) list_media
+  server.registerTool(
+    "list_media",
+    {
+      title: "List Media",
+      description:
+        "Most recent stored images/videos/merges with their result URLs from the database (no regeneration) — to recall previously generated media.",
+      inputSchema: {
+        type: z.enum(["image", "video", "merge"]).optional(),
+        status: z.enum(["completed", "failed", "processing"]).optional(),
+        limit: z.number().int().min(1).max(50).default(10),
+      },
+    },
+    async (args) => {
+      const a = args as {
+        type?: TaskType;
+        status?: TaskStatus;
+        limit?: number;
+      };
+      try {
+        const rows = await listRecentTasks(a.limit ?? 10, { type: a.type, status: a.status });
+        return textResult(formatListMedia(rows, a.limit ?? 10));
+      } catch (e) {
+        return textResult({ text: `❌ فشلت المهمة: ${(e as Error).message}`, isError: true });
+      }
+    }
+  );
+}
