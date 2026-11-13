@@ -262,10 +262,4 @@ export function registerMediaTools(server: McpServer): void {
       }
     }
   );
-
-  // 5) list_media
-  server.registerTool(
-    "list_media",
-    {
-      title: "List Media",
-      description:
+  
