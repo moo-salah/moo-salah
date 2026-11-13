@@ -8,7 +8,7 @@ export interface ModelDef {
   aliases: string[]; // صيغ بديلة نقبلها ونوحّدها (شرطات/نقاط)
   type: MediaType;
   providers: ProviderId[]; // من يستطيع خدمته — تُجرَّب مفاتيحه كلها بالترتيب
-  providerModel: Record<ProviderId, string>; // اسم الموديل كما يُرسل لكل مزود
+  providerModel: Partial<Record<ProviderId, string>>; // اسم الموديل كما يُرسل لكل مزود
 }
 
 const KIE_IMAGE_MODEL = process.env.KIE_IMAGE_MODEL || "gpt-image-2-6/flare-text-to-image";
@@ -33,9 +33,23 @@ export const MODELS: ModelDef[] = [
     providers: ["kie", "cometapi"],
     providerModel: { kie: KIE_VIDEO_MODEL, cometapi: COMETAPI_VIDEO_MODEL },
   },
+  {
+    canonical: "google/gemini-omni-flash-1-2",
+    aliases: ["google/gemini-omni-flash-1.2", "gemini-omni-flash-1-2", "gemini-omni-1-2-flash"],
+    type: "video",
+    providers: ["kie"],
+    providerModel: { kie: "google/gemini-omni-flash-1-2" },
+  },
+  {
+    canonical: "bytedance/seedance-2-5",
+    aliases: ["bytedance/seedance-2.5", "seedance-2-5", "seedance-2.5"],
+    type: "video",
+    providers: ["kie"],
+    providerModel: { kie: "bytedance/seedance-2-5" },
+  },
 ];
 
-// توحيد الاسم: نقاط ↔ شرطات قبل المطابقة (نقبل gpt-image-2.6/... و grok-imagine-video-1.5-preview)
+// توحيد الاسم: نقاط ↔ شرطات قبل المطابقة
 function normalizeName(name: string): string {
   return name.trim().toLowerCase().replace(/\./g, "-").replace(/\s+/g, "");
 }
