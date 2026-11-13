@@ -7,8 +7,8 @@ const { limits } = require("./limits");
 let _client = null;
 function db() {
   if (!_client) {
-    const url = process.env.TURSO_DATABASE_URL;
-    const authToken = process.env.TURSO_AUTH_TOKEN;
+    const url = (process.env.TURSO_DATABASE_URL || "").trim();
+const authToken = (process.env.TURSO_AUTH_TOKEN || "").trim();
     if (!url || !authToken) {
       throw Object.assign(
         new Error(
