@@ -62,6 +62,8 @@ interface Bound {
 // نسب النسب المدعومة فعليًا لدى المزود (من توثيق docs.kie.ai — لا نخترع حقولًا)
 const KIE_IMAGE_RATIOS = new Set(["1:1", "3:2", "2:3", "4:3", "3:4", "16:9", "9:16", "21:9"]);
 const KIE_VIDEO_RATIOS = new Set(["1:1", "16:9", "9:16", "3:2", "2:3"]);
+const GEMINI_RATIOS = new Set(["16:9", "9:16", "auto"]);
+const SEEDANCE_RATIOS = new Set(["16:9", "9:16", "4:3", "3:4", "1:1", "21:9", "adaptive"]);
 
 // بناء input المزود من معطيات الأداة الأصلية
 export function buildProviderInput(
@@ -78,15 +80,36 @@ export function buildProviderInput(
     if (["1K", "2K", "4K"].includes(res)) input.resolution = res;
     const bg = params.background ? String(params.background) : "auto";
     if (bg !== "auto" && res === "1K") input.background = bg; // الخلفية مدعومة عند 1K فقط
-    // output_format غير موثق لدى flare — لا نرسل حقولًا غير موثقة
   } else {
+    const modelName = String(params.model ?? "");
     input.prompt = String(params.prompt ?? "");
-    if (params.image_url) input.image_url = String(params.image_url);
     const ar = params.aspect_ratio ? String(params.aspect_ratio) : "auto";
-    if (ar !== "auto" && KIE_VIDEO_RATIOS.has(ar)) input.aspect_ratio = ar;
-    if (params.resolution && ["480p", "720p", "1080p"].includes(String(params.resolution))) {
-      input.resolution = String(params.resolution);
+
+    // 1) موديل google/gemini-omni-flash-1-2 (مثبت على 360p فقط لتوفير الرصيد)
+    if (modelName.includes("gemini-omni")) {
+      if (params.image_url) input.image_urls = [String(params.image_url)];
+      if (GEMINI_RATIOS.has(ar) && ar !== "auto") input.aspect_ratio = ar;
+      input.resolution = "360p";
+      const dur = params.duration != null ? Number(params.duration) : 8;
+      input.duration = Math.min(15, Math.max(3, dur));
+      return input;
     }
+
+    // 2) موديل bytedance/seedance-2-5 (مثبت على أقل جودة مدعومة 480p لتوفير الرصيد)
+    if (modelName.includes("seedance")) {
+      if (params.image_url) input.reference_image_urls = [String(params.image_url)];
+      if (SEEDANCE_RATIOS.has(ar) && ar !== "auto") input.aspect_ratio = ar;
+      input.resolution = "480p";
+      const dur = params.duration != null ? Number(params.duration) : 8;
+      input.duration = Math.min(30, Math.max(4, dur));
+      if (params.enable_audio != null) input.generate_audio = Boolean(params.enable_audio);
+      return input;
+    }
+
+    // 3) الموديل الافتراضي grok-imagine-video-1-5-preview
+    if (params.image_url) input.image_url = String(params.image_url);
+    if (ar !== "auto" && KIE_VIDEO_RATIOS.has(ar)) input.aspect_ratio = ar;
+    input.resolution = "480p";
     if (params.duration != null) input.duration = Number(params.duration);
     if (params.enable_audio != null) input.enable_audio = Boolean(params.enable_audio);
   }
@@ -117,7 +140,7 @@ async function attemptCreation(
     const adapter = ADAPTERS[key.provider];
     const input = buildProviderInput(req.type, key.provider, req.params);
     try {
-      const r = await adapter.createTask(toProviderKey(key), modelDef.providerModel[key.provider], input);
+      const r = await adapter.createTask(toProviderKey(key), modelDef.providerModel[key.provider]!, input);
       await bumpKeyStats(key.id, true);
       await updateTask(
         taskId,
