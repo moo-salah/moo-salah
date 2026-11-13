@@ -1,14 +1,13 @@
-// سجل الموديلات — الأسماء المدمجة مثبتة كما في المواصفة وقابلة للتجاوز بمتغيرات البيئة
 export type ProviderId = "kie" | "cometapi";
 export type TaskProvider = ProviderId | "merger";
 export type MediaType = "image" | "video" | "merge";
 
 export interface ModelDef {
-  canonical: string; // الاسم كما يراه عميل MCP
-  aliases: string[]; // صيغ بديلة نقبلها ونوحّدها (شرطات/نقاط)
+  canonical: string;
+  aliases: string[];
   type: MediaType;
-  providers: ProviderId[]; // من يستطيع خدمته — تُجرَّب مفاتيحه كلها بالترتيب
-  providerModel: Partial<Record<ProviderId, string>>; // اسم الموديل كما يُرسل لكل مزود
+  providers: ProviderId[];
+  providerModel: Partial<Record<ProviderId, string>>;
 }
 
 const KIE_IMAGE_MODEL = process.env.KIE_IMAGE_MODEL || "gpt-image-2-6/flare-text-to-image";
@@ -49,7 +48,6 @@ export const MODELS: ModelDef[] = [
   },
 ];
 
-// توحيد الاسم: نقاط ↔ شرطات قبل المطابقة
 function normalizeName(name: string): string {
   return name.trim().toLowerCase().replace(/\./g, "-").replace(/\s+/g, "");
 }
